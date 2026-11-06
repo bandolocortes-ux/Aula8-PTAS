@@ -1,6 +1,20 @@
 import { usersModel } from '../models/users.model.js'
 
 export const usersService = {
+  async listUsers() {
+    return usersModel.findAll()
+  },
+
+  async getUser(id) {
+    const user = await usersModel.findById(id)
+    if (!user) {
+      const error = new Error('usuário não encontrado')
+      error.status = 404
+      throw error
+    }
+    return user
+  },
+
   async createUser(data) {
     const emailAlreadyExists = (await usersModel.findAll())
       .some(user => user.email === data.email)
@@ -15,13 +29,12 @@ export const usersService = {
   },
 
   async updateUser(id, data) {
-    const user = await usersModel.findById(id)
-    if (!user) {
-      const error = new Error('usuário não encontrado')
-      error.status = 404
-      throw error
-    }
-
+    await this.getUser(id)
     return usersModel.update(id, data)
+  },
+
+  async deleteUser(id) {
+    await this.getUser(id)
+    return usersModel.remove(id)
   },
 }
